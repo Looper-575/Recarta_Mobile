@@ -1,56 +1,61 @@
-# Welcome to your Expo app 👋
+# Store app
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The customer app for Keryana Store, built with Expo (SDK 58), Expo Router and TypeScript.
+One codebase serves any store running the same Laravel API (`/api/v1`, documented in the
+Laravel repo's `docs/api_v1.md`): the store is chosen when the app is started or built.
 
-## Get started
+## Stores
 
-1. Install dependencies
+`stores/<store>.json` holds what is fixed into a build: app name, bundle id / package name,
+URL scheme, website, API URL. Everything that can change without a release (theme colour,
+logo, contact details, payment methods) comes from the store's `GET /api/v1/settings` at
+launch.
 
-   ```bash
-   npm install
-   ```
+Before the first build, fill in `stores/keryana.json`: `website`, `apiUrl` (the live
+domain + `/api/v1`), and confirm `iosBundleId` / `androidPackage`.
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run it
 
 ```bash
-npm run reset-project
+npm install
+STORE=keryana npx expo start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Open it in **Expo Go** on a phone on the same network (scan the QR code). Everything in this
+version works in Expo Go. A development build (`npx eas-cli@latest build --profile development`)
+is only needed once native features that Expo Go lacks are added (push notifications on
+Android, Sign in with Apple).
 
-### Other setup steps
+To point a dev run at another server without editing the store file:
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+EXPO_PUBLIC_API_URL=https://staging.example.com/api/v1 STORE=keryana npx expo start
+```
 
-## Learn more
+On Windows PowerShell, set variables first: `$env:STORE="keryana"; npx expo start`.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Check before committing
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npx tsc --noEmit
+npx expo lint
+```
 
-## Join the community
+## Layout
 
-Join our community of developers creating universal apps.
+| Path | What |
+|---|---|
+| `src/app/(tabs)/` | Home, Categories, Search, Cart, Account (native tabs) |
+| `src/app/` | Screens pushed over the tabs: product, category, brand, checkout, login, register, forgot password, orders, track |
+| `src/lib/api.ts` | API client: login token or guest cart token, app version, platform; 401 logs out, 426 shows "please update" |
+| `src/hooks/queries.ts` | TanStack Query hooks for every endpoint |
+| `src/state/session.ts` | Login token (secure store), guest cart token and city (AsyncStorage) |
+| `src/theme/` | Colours, with the accent from the store's `primary_color` |
+| `src/i18n/` | All visible text (English; Urdu later) |
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Status
+
+Phase 3 (MVP) of the plan: browse, search, product, cart, email login / sign-up / password
+reset, checkout with Cash on Delivery and Bank Transfer, orders (cancel, order again), guest
+tracking. Phase 4 adds PayFast, push notifications, deep links, wishlist, wallet, returns,
+address book, Google / Apple sign-in and account deletion.
