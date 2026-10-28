@@ -34,6 +34,21 @@ EXPO_PUBLIC_API_URL=https://staging.example.com/api/v1 STORE=keryana npx expo st
 
 On Windows PowerShell, set variables first: `$env:STORE="keryana"; npx expo start`.
 
+## Google sign-in
+
+Uses the native Google sign-in (`@react-native-google-signin/google-signin`), so it works
+in development and store builds only, not in Expo Go. Per store:
+
+1. `googleWebClientId` in `stores/<store>.json`: the OAuth **web** client id (the same one
+   the website's Google login uses).
+2. On the server, `.env`: `GOOGLE_APP_CLIENT_IDS=<that web client id>`, so the API accepts
+   the app's tokens.
+3. In Google Cloud console → Credentials, an **Android** OAuth client with the app's package
+   name and the SHA-1 of each signing key (EAS: `npx eas-cli@latest credentials`; Play
+   Console: App signing key). Without it the sign-in sheet fails with DEVELOPER_ERROR.
+4. For iPhone: an **iOS** OAuth client for the bundle id, its id in `googleIosClientId`.
+   Until then the Google button is hidden on iOS.
+
 ## Check before committing
 
 ```bash

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 
+import { AppleSignIn } from '@/components/apple-sign-in';
+import { GoogleSignIn } from '@/components/google-sign-in';
 import { AppText, Button, ErrorText, styles, TextField } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
 import { completeLogin, deviceName } from '@/lib/auth';
@@ -65,6 +67,8 @@ export default function RegisterScreen() {
             <TextField label={t('auth.confirmPassword')} value={form.password_confirmation} onChangeText={set('password_confirmation')} secureTextEntry autoComplete="new-password" />
             {generalError ? <ErrorText>{generalError}</ErrorText> : null}
             <Button title={t('common.continue')} onPress={sendCode} loading={busy} style={{ marginTop: spacing.sm }} />
+            <AppleSignIn />
+            <GoogleSignIn />
             <Button title={t('auth.haveAccount')} variant="link" onPress={() => router.replace('/login')} />
           </>
         ) : (

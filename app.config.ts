@@ -23,6 +23,10 @@ type StoreConfig = {
   androidPackage: string;
   primaryColor: string;
   easProjectId?: string;
+  /** Google sign-in: the OAuth web client id (used on Android, and checked by the server). */
+  googleWebClientId?: string;
+  /** Google sign-in on iPhone: the OAuth iOS client id. Without it, iOS shows no Google button. */
+  googleIosClientId?: string;
 };
 
 const store = process.env.STORE ?? 'keryana';
@@ -53,6 +57,11 @@ const appLinks = websiteHost
       },
     }
   : { ios: {}, android: {} };
+
+// Google sign-in on iOS registers a URL scheme: the iOS client id, reversed.
+const googleIosScheme = config.googleIosClientId
+  ? `com.googleusercontent.apps.${config.googleIosClientId.replace(/\.apps\.googleusercontent\.com$/, '')}`
+  : null;
 
 export default ({ config: base }: ConfigContext): ExpoConfig => ({
   ...base,
@@ -97,6 +106,7 @@ export default ({ config: base }: ConfigContext): ExpoConfig => ({
       { photosPermission: 'Used to attach your bank transfer receipt to an order.' },
     ],
     'expo-notifications',
+    ...(googleIosScheme ? [['@react-native-google-signin/google-signin', { iosUrlScheme: googleIosScheme }] as [string, object]] : []),
   ],
   experiments: {
     typedRoutes: true,
@@ -107,6 +117,8 @@ export default ({ config: base }: ConfigContext): ExpoConfig => ({
     apiUrl,
     website: config.website,
     primaryColor: config.primaryColor,
+    googleWebClientId: config.googleWebClientId ?? '',
+    googleIosClientId: config.googleIosClientId ?? '',
     ...(config.easProjectId ? { eas: { projectId: config.easProjectId } } : {}),
   },
 });

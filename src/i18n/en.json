@@ -128,7 +128,9 @@
         "newPassword": "New password",
         "resetPassword": "Reset password",
         "resetDone": "Password reset. Please log in.",
-        "phoneNumber": "Mobile number"
+        "phoneNumber": "Mobile number",
+        "google": "Continue with Google",
+        "googleFailed": "Google sign-in failed. Please try again."
     },
     "account": {
         "title": "Account",

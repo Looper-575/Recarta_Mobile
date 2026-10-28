@@ -1,11 +1,13 @@
 {
-  "name": "Keryana Store",
-  "slug": "keryana-store",
-  "scheme": "keryana",
-  "website": "https://recarta.atlantisbposolutions.com:4343",
-  "apiUrl": "https://recarta.atlantisbposolutions.com:4343/api/v1",
-  "iosBundleId": "pk.keryana.app",
-  "androidPackage": "pk.keryana.app",
-  "primaryColor": "#4CAF50",
-  "easProjectId": ""
+    "name": "Keryana Store",
+    "slug": "keryana-store",
+    "scheme": "keryana",
+    "website": "https://recarta.atlantisbposolutions.com:4343",
+    "apiUrl": "https://recarta.atlantisbposolutions.com:4343/api/v1",
+    "iosBundleId": "pk.keryana.app",
+    "androidPackage": "pk.keryana.app",
+    "primaryColor": "#4CAF50",
+    "easProjectId": "",
+    "googleWebClientId": "32656825116-r3aorbd54uefn34ua6mtkoi6jcscmg0j.apps.googleusercontent.com",
+    "googleIosClientId": ""
 }
