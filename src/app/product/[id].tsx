@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Price } from '@/components/product';
 import { AppText, Button, Card, Chip, ErrorText, ErrorView, Heading, Loading, TextField } from '@/components/ui';
-import { useAddToCart, useCart, useProduct } from '@/hooks/queries';
+import { useAddToCart, useCart, useProduct, useToggleWishlist, useWishlist } from '@/hooks/queries';
 import { api, ApiError } from '@/lib/api';
 import { useSession } from '@/state/session';
 import { spacing, useTheme } from '@/theme';
@@ -21,6 +21,8 @@ export default function ProductScreen() {
   const product = useProduct(id);
   const cart = useCart();
   const add = useAddToCart();
+  const wishlist = useWishlist();
+  const toggleWishlist = useToggleWishlist();
   const customer = useSession((s) => s.customer);
   const [itemId, setItemId] = useState<number | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(customer?.email ?? '');
@@ -36,6 +38,7 @@ export default function ProductScreen() {
   const canBuy = p.sellable && stock?.status !== 'out_of_stock' && stock?.status !== 'unavailable';
   const inCart = cart.data?.items.find((l) => l.item_id === item?.id)?.quantity ?? 0;
   const images = item?.images.length ? item.images : p.thumbnail ? [p.thumbnail] : [];
+  const inWishlist = !!item && !!wishlist.data?.some((w) => w.item_id === item.id);
   const notifyRequested = notifyDone || (item ? p.notify_requested.includes(item.id) : false);
 
   const addToCart = () =>
@@ -75,7 +78,16 @@ export default function ProductScreen() {
         />
         <View style={{ padding: spacing.lg, gap: spacing.sm }}>
           {p.brand ? <AppText muted size={13}>{p.brand.title}</AppText> : null}
-          <AppText size={20} bold>{p.title}</AppText>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm }}>
+            <AppText size={20} bold style={{ flex: 1 }}>{p.title}</AppText>
+            {item ? (
+              <Button
+                title={inWishlist ? '♥' : '♡'}
+                variant="link"
+                onPress={() => (customer ? toggleWishlist.mutate({ itemId: item.id, add: !inWishlist }) : router.push('/login'))}
+              />
+            ) : null}
+          </View>
           {item ? <Price price={item.price} original={item.original_price} size={20} /> : null}
           {stock ? (
             <AppText size={13} style={{ color: stock.status === 'in_stock' ? theme.success : stock.status === 'low_stock' ? theme.warning : theme.danger }}>

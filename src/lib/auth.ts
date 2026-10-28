@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import * as Device from 'expo-device';
 
 import { api } from '@/lib/api';
+import { forgetPushDevice, registerForPush } from '@/lib/push';
 import type { LoginResponse } from '@/lib/types';
 import { useSession } from '@/state/session';
 
@@ -12,9 +13,12 @@ export const deviceName = () => [Device.manufacturer, Device.modelName].filter(B
 export async function completeLogin(response: LoginResponse, queryClient: QueryClient) {
   await useSession.getState().logIn(response.token, response.customer);
   await queryClient.invalidateQueries();
+  // Ties this phone's push token to the customer now logged in.
+  registerForPush();
 }
 
 export async function logOut(queryClient: QueryClient) {
+  await forgetPushDevice();
   try {
     await api('auth/logout', { method: 'POST' });
   } catch {

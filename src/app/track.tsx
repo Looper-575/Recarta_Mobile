@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
@@ -13,7 +14,8 @@ type Tracked = OrderSummary & { timeline: { status: string; created_at: string |
 /** Guest tracking: the order number plus the phone number it was placed with. */
 export default function TrackScreen() {
   const { t } = useTranslation();
-  const [number, setNumber] = useState('');
+  const params = useLocalSearchParams<{ number?: string }>();
+  const [number, setNumber] = useState(params.number ?? '');
   const [phone, setPhone] = useState('');
   const [order, setOrder] = useState<Tracked | null>(null);
   const [error, setError] = useState<string | null>(null);

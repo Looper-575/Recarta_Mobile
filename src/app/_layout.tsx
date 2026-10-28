@@ -11,6 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppText, styles } from '@/components/ui';
 import { ApiError } from '@/lib/api';
+import { handleNotificationTaps, registerForPush } from '@/lib/push';
 import { useSession } from '@/state/session';
 import { useTheme } from '@/theme';
 
@@ -50,6 +51,12 @@ function AppStack() {
   const { t } = useTranslation();
   const updateRequired = useSession((s) => s.updateRequired);
 
+  // Order updates by push: register this phone, and open an order when its update is tapped.
+  useEffect(() => {
+    registerForPush();
+    return handleNotificationTaps();
+  }, []);
+
   if (updateRequired) {
     return (
       <View style={[styles.center, { backgroundColor: theme.background }]}>
@@ -79,6 +86,15 @@ function AppStack() {
       <Stack.Screen name="orders/index" options={{ title: t('orders.title') }} />
       <Stack.Screen name="orders/[id]" options={{ title: '' }} />
       <Stack.Screen name="track" options={{ title: t('track.title') }} />
+      <Stack.Screen name="profile" options={{ title: t('account.profile') }} />
+      <Stack.Screen name="addresses" options={{ title: t('account.addresses') }} />
+      <Stack.Screen name="address-edit" options={{ title: '' }} />
+      <Stack.Screen name="wishlist" options={{ title: t('account.wishlist') }} />
+      <Stack.Screen name="wallet" options={{ title: t('account.walletLink') }} />
+      <Stack.Screen name="notifications" options={{ title: t('account.notifications') }} />
+      <Stack.Screen name="returns" options={{ title: t('account.returns') }} />
+      <Stack.Screen name="return/[orderId]" options={{ title: t('returns.request') }} />
+      <Stack.Screen name="pay/[id]" options={{ title: t('pay.title'), gestureEnabled: false }} />
     </Stack>
   );
 }

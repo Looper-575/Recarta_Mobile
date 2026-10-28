@@ -26,8 +26,6 @@ import type { Address, CheckoutBody, PlacedOrder, Quote } from '@/lib/types';
 import { useSession } from '@/state/session';
 import { spacing, useTheme } from '@/theme';
 
-/** PayFast opens the gateway in a browser, which comes with Phase 4 of the app. */
-const METHODS_NOT_YET_IN_APP = ['PayFast'];
 
 export default function CheckoutScreen() {
   const { t } = useTranslation();
@@ -86,7 +84,7 @@ export default function CheckoutScreen() {
   const pickupAvailable = (pickupLocations.data?.length ?? 0) > 0;
   // The first window on offer, unless the customer chose one that is still offered.
   const pickupSlot = pickupSlots.data?.some((s) => s.value === pickupSlotChoice) ? pickupSlotChoice : (pickupSlots.data?.[0]?.value ?? null);
-  const methods = (settings.data?.payment_methods ?? []).filter((m) => !METHODS_NOT_YET_IN_APP.includes(m.code));
+  const methods = settings.data?.payment_methods ?? [];
 
   // A saved default address fills the form once, as on the website.
   if (!prefilled && addresses.data) {
@@ -166,10 +164,13 @@ export default function CheckoutScreen() {
       if (cityId) await useSession.getState().setCityId(cityId);
       await queryClient.invalidateQueries({ queryKey: ['cart'] });
       await queryClient.invalidateQueries({ queryKey: ['orders'] });
-      router.replace({
-        pathname: '/order-placed/[id]',
-        params: { id: String(order.order_id), number: order.order_number, total: String(order.total) },
-      });
+      const placed = { id: String(order.order_id), number: order.order_number, total: String(order.total) };
+      if (order.payment_url) {
+        // Card payment: PayFast's page next; the phone lets a guest's payment be checked.
+        router.replace({ pathname: '/pay/[id]', params: { ...placed, url: order.payment_url, phone: contact.phone } });
+      } else {
+        router.replace({ pathname: '/order-placed/[id]', params: placed });
+      }
     } catch (e) {
       setError(e instanceof ApiError ? e : new ApiError(String(e), 0));
     } finally {
@@ -305,9 +306,6 @@ export default function CheckoutScreen() {
             <Chip key={m.code} label={m.name} selected={paymentMethod === m.code} onPress={() => setPaymentMethod(m.code)} />
           ))}
         </View>
-        {(settings.data?.payment_methods ?? []).some((m) => METHODS_NOT_YET_IN_APP.includes(m.code)) ? (
-          <AppText muted size={12} style={{ marginBottom: spacing.sm }}>{t('checkout.payfastSoon')}</AppText>
-        ) : null}
         {q?.payment_method_error ? <ErrorText>{q.payment_method_error}</ErrorText> : null}
         {paymentMethod === 'Bank Transfer' ? (
           <Card>

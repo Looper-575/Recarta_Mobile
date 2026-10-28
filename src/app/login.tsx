@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 
+import { AppleSignIn } from '@/components/apple-sign-in';
 import { Button, ErrorText, styles, TextField } from '@/components/ui';
 import { api, ApiError } from '@/lib/api';
 import { completeLogin, deviceName } from '@/lib/auth';
@@ -57,6 +58,7 @@ export default function LoginScreen() {
         />
         {error && !error.field('email') && !error.field('password') ? <ErrorText>{error.message}</ErrorText> : null}
         <Button title={t('auth.login')} onPress={submit} loading={busy} style={{ marginTop: spacing.sm }} />
+        <AppleSignIn />
         <Button title={t('auth.forgot')} variant="link" onPress={() => router.replace('/forgot-password')} />
         <Button title={t('auth.noAccount')} variant="link" onPress={() => router.replace('/register')} />
       </ScrollView>

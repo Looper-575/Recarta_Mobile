@@ -39,7 +39,17 @@ export default function AccountScreen() {
           </Card>
         )}
 
-        {customer ? <Item label={t('account.orders')} onPress={() => router.push('/orders')} /> : null}
+        {customer ? (
+          <>
+            <Item label={t('account.orders')} onPress={() => router.push('/orders')} />
+            <Item label={t('account.returns')} onPress={() => router.push('/returns')} />
+            <Item label={t('account.wishlist')} onPress={() => router.push('/wishlist')} />
+            <Item label={t('account.addresses')} onPress={() => router.push('/addresses')} />
+            <Item label={t('account.walletLink')} onPress={() => router.push('/wallet')} />
+            <Item label={t('account.notifications')} onPress={() => router.push('/notifications')} />
+            <Item label={t('account.profile')} onPress={() => router.push('/profile')} />
+          </>
+        ) : null}
         <Item label={t('account.trackOrder')} onPress={() => router.push('/track')} />
         {settings?.store.website ? <Item label={settings.store.website.replace(/^https?:\/\//, '')} onPress={() => WebBrowser.openBrowserAsync(settings.store.website)} /> : null}
         {settings?.store.phone ? <AppText muted style={{ marginTop: spacing.lg }}>{settings.store.phone}</AppText> : null}

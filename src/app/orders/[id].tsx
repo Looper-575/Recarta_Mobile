@@ -108,7 +108,14 @@ export default function OrderScreen() {
       ) : null}
 
       <View style={{ gap: spacing.sm, marginTop: spacing.xl }}>
+        {o.pay_url ? (
+          <Button
+            title={t('pay.payNow', { amount: formatRs(o.total) })}
+            onPress={() => router.push({ pathname: '/pay/[id]', params: { id: String(o.id), url: o.pay_url!, number: o.order_number, total: String(o.total) } })}
+          />
+        ) : null}
         <Button title={t('orders.reorder')} onPress={() => act('reorder')} loading={busy === 'reorder'} />
+        {o.can_return ? <Button title={t('returns.request')} variant="outline" onPress={() => router.push({ pathname: '/return/[orderId]', params: { orderId: String(o.id) } })} /> : null}
         <Button title={t('orders.invoice')} variant="outline" onPress={() => WebBrowser.openBrowserAsync(o.invoice_url)} />
         {o.can_cancel ? <Button title={t('orders.cancel')} variant="danger" onPress={confirmCancel} loading={busy === 'cancel'} /> : null}
       </View>

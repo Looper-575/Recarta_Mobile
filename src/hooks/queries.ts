@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 
 import { api } from '@/lib/api';
 import type {
+  Address,
   Area,
   Brand,
   Cart,
@@ -189,4 +190,90 @@ export const usePickupSlots = (locationId?: number | null) =>
     queryKey: ['pickup-slots', locationId],
     queryFn: () => api<{ data: PickupSlot[] }>(`pickup-locations/${locationId}/slots`).then((r) => r.data),
     enabled: !!locationId,
+  });
+
+// --- Account area -------------------------------------------------------------
+
+export type WishlistEntry = {
+  product_id: number;
+  item_id: number;
+  title: string;
+  item_title: string;
+  thumbnail: string | null;
+  price: number;
+  original_price: number;
+  sellable: boolean;
+};
+
+export type WalletEntry = { credit: number | string | null; debit: number | string | null; type: string | null; transaction_date: string | null; order_id: number | null };
+
+export type NotificationEntry = {
+  order_id: number;
+  order_number: string;
+  status: string;
+  notes: string | null;
+  created_at: string | null;
+};
+
+export type ReturnEntry = {
+  id: number;
+  order_id: number;
+  order_number: string;
+  type: string;
+  status: string;
+  reason: string;
+  items: { item_id: number; quantity: number; amount: number }[];
+  created_at: string | null;
+};
+
+export const useAddresses = () => {
+  const token = useSession((s) => s.token);
+  return useQuery({
+    queryKey: ['addresses'],
+    queryFn: () => api<{ data: Address[] }>('addresses').then((r) => r.data),
+    enabled: !!token,
+  });
+};
+
+export const useWishlist = () => {
+  const token = useSession((s) => s.token);
+  return useQuery({
+    queryKey: ['wishlist'],
+    queryFn: () => api<{ data: WishlistEntry[] }>('wishlist').then((r) => r.data),
+    enabled: !!token,
+  });
+};
+
+export const useToggleWishlist = () => {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ itemId, add }: { itemId: number; add: boolean }) =>
+      api(`wishlist/${itemId}`, { method: add ? 'POST' : 'DELETE' }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['wishlist'] }),
+  });
+};
+
+export const useWallet = () =>
+  useInfiniteQuery({
+    queryKey: ['wallet'],
+    queryFn: ({ pageParam }) =>
+      api<Paginated<WalletEntry> & { balance: number }>('wallet', { query: { page: pageParam } }),
+    initialPageParam: 1,
+    getNextPageParam: nextPage,
+  });
+
+export const useNotifications = () =>
+  useInfiniteQuery({
+    queryKey: ['notifications'],
+    queryFn: ({ pageParam }) => api<Paginated<NotificationEntry>>('notifications', { query: { page: pageParam } }),
+    initialPageParam: 1,
+    getNextPageParam: nextPage,
+  });
+
+export const useReturns = () =>
+  useInfiniteQuery({
+    queryKey: ['returns'],
+    queryFn: ({ pageParam }) => api<Paginated<ReturnEntry>>('returns', { query: { page: pageParam } }),
+    initialPageParam: 1,
+    getNextPageParam: nextPage,
   });
