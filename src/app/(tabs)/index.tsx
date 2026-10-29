@@ -51,7 +51,9 @@ export default function HomeScreen() {
         ) : null}
 
         <View style={{ paddingHorizontal: spacing.lg }}>
-          <Heading>{t('home.shopByCategory')}</Heading>
+          <Heading action={{ label: t('common.seeAll'), onPress: () => router.navigate('/(tabs)/categories') }}>
+            {t('home.shopByCategory')}
+          </Heading>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}

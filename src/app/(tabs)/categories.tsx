@@ -10,19 +10,31 @@ import { useCategories } from '@/hooks/queries';
 import type { Category } from '@/lib/types';
 import { radius, spacing, useTheme } from '@/theme';
 
-/** Parent categories on the left, the chosen one's sub-categories on the right. */
+/**
+ * "All" and the parent categories on the left; on the right, the chosen parent and its
+ * sub-categories, or for "All" every parent followed by its own. A parent row opens all
+ * of that category's products, sub-categories included.
+ */
 export default function CategoriesScreen() {
   const theme = useTheme();
   const { t } = useTranslation();
   const categories = useCategories();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  // "all" (the first entry) or a parent category's id.
+  const [selectedId, setSelectedId] = useState<number | 'all'>('all');
 
   if (categories.isPending) return <Loading />;
   if (categories.isError) return <ErrorView message={categories.error.message} onRetry={categories.refetch} />;
 
   const parents = categories.data;
-  const selected = parents.find((c) => c.id === selectedId) ?? parents[0];
+  const selected = selectedId === 'all' ? null : (parents.find((c) => c.id === selectedId) ?? null);
   const open = (c: Category) => router.push({ pathname: '/category/[id]', params: { id: String(c.id), title: c.title } });
+
+  const rows = (selected ? [selected] : parents).flatMap((parent) => [
+    { category: parent, isParent: true },
+    ...(parent.children ?? []).map((child) => ({ category: child, isParent: false })),
+  ]);
+
+  const sidebar: { id: number | 'all'; title: string }[] = [{ id: 'all', title: t('categories.all') }, ...parents];
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.background }}>
@@ -30,10 +42,10 @@ export default function CategoriesScreen() {
       <View style={{ flex: 1, flexDirection: 'row' }}>
         <FlatList
           style={{ width: 120, flexGrow: 0, backgroundColor: theme.surface }}
-          data={parents}
+          data={sidebar}
           keyExtractor={(c) => String(c.id)}
           renderItem={({ item }) => {
-            const active = item.id === selected?.id;
+            const active = item.id === selectedId;
             return (
               <Pressable
                 onPress={() => setSelectedId(item.id)}
@@ -45,22 +57,22 @@ export default function CategoriesScreen() {
             );
           }}
         />
-        {selected ? (
-          <FlatList
-            style={{ flex: 1 }}
-            contentContainerStyle={{ padding: spacing.md }}
-            data={[selected, ...(selected.children ?? [])]}
-            keyExtractor={(c) => String(c.id)}
-            renderItem={({ item, index }) => (
-              <Pressable onPress={() => open(item)} style={[styles.child, { borderColor: theme.border }]}>
-                {item.image ? <Image source={item.image} style={styles.childImage} contentFit="contain" /> : null}
-                <AppText bold={index === 0} style={{ flex: 1 }}>
-                  {index === 0 ? `${t('common.seeAll')}: ${item.title}` : item.title}
-                </AppText>
-              </Pressable>
-            )}
-          />
-        ) : null}
+        <FlatList
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: spacing.md }}
+          data={rows}
+          keyExtractor={(r) => String(r.category.id)}
+          renderItem={({ item: { category, isParent }, index }) => (
+            <Pressable
+              onPress={() => open(category)}
+              style={[styles.child, { borderColor: theme.border }, isParent && index > 0 && { marginTop: spacing.md }]}>
+              {category.image ? <Image source={category.image} style={styles.childImage} contentFit="contain" /> : null}
+              <AppText bold={isParent} style={{ flex: 1 }}>
+                {isParent ? `${t('common.seeAll')}: ${category.title}` : category.title}
+              </AppText>
+            </Pressable>
+          )}
+        />
       </View>
     </SafeAreaView>
   );

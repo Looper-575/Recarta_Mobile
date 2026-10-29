@@ -13,7 +13,10 @@
         "nothingHere": "Nothing here yet.",
         "noConnection": "No connection. Please check your internet and try again."
     },
-    "tabs": {
+    "categories": {
+    "all": "All"
+  },
+  "tabs": {
         "home": "Home",
         "categories": "Categories",
         "search": "Search",

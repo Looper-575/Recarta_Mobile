@@ -29,12 +29,27 @@ export function AppText({ muted, bold, size = 15, style, ...props }: TextProps &
   );
 }
 
-export function Heading({ children, style }: { children: ReactNode; style?: ViewStyle }) {
+/** A section title, with an optional link on the right (e.g. "See all"). */
+export function Heading({
+  children,
+  style,
+  action,
+}: {
+  children: ReactNode;
+  style?: ViewStyle;
+  action?: { label: string; onPress: () => void };
+}) {
+  const theme = useTheme();
   return (
-    <View style={[{ marginTop: spacing.lg, marginBottom: spacing.sm }, style]}>
-      <AppText size={18} bold>
+    <View style={[{ marginTop: spacing.lg, marginBottom: spacing.sm, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, style]}>
+      <AppText size={18} bold style={{ flexShrink: 1 }}>
         {children}
       </AppText>
+      {action ? (
+        <Pressable onPress={action.onPress} hitSlop={8} accessibilityRole="button">
+          <AppText bold style={{ color: theme.primary }}>{action.label}</AppText>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
