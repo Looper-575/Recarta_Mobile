@@ -47,11 +47,14 @@ export type ListFilters = { sort?: string };
 
 type ProductPage = Paginated<Product> & { meta: { category?: Category; brand?: Brand; total?: number } };
 
-export const useCategoryProducts = (categoryId: number, filters: ListFilters) =>
+/** A category's products, sub-categories included; 'all' for every product. */
+export const useCategoryProducts = (categoryId: number | 'all', filters: ListFilters) =>
   useInfiniteQuery({
     queryKey: ['category-products', categoryId, filters],
     queryFn: ({ pageParam }) =>
-      api<ProductPage>(`categories/${categoryId}/products`, { query: { page: pageParam, ...filters } }),
+      api<ProductPage>(categoryId === 'all' ? 'products' : `categories/${categoryId}/products`, {
+        query: { page: pageParam, ...filters },
+      }),
     initialPageParam: 1,
     getNextPageParam: nextPage,
   });

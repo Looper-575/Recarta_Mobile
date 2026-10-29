@@ -14,8 +14,9 @@
         "noConnection": "No connection. Please check your internet and try again."
     },
     "categories": {
-    "all": "All"
-  },
+        "all": "All",
+        "allProducts": "All products"
+    },
   "tabs": {
         "home": "Home",
         "categories": "Categories",

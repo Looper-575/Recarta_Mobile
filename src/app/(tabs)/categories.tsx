@@ -1,19 +1,19 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { openCategory } from '@/components/category';
 import { AppText, ErrorView, Loading } from '@/components/ui';
 import { useCategories } from '@/hooks/queries';
 import type { Category } from '@/lib/types';
 import { radius, spacing, useTheme } from '@/theme';
 
 /**
- * "All" and the parent categories on the left; on the right, the chosen parent and its
- * sub-categories, or for "All" every parent followed by its own. A parent row opens all
- * of that category's products, sub-categories included.
+ * "All" and the parent categories on the left; on the right, the chosen parent and every
+ * level of sub-category under it (indented by depth), or for "All" a row for every product
+ * followed by each parent's tree. A row opens that category's products, sub-categories included.
  */
 export default function CategoriesScreen() {
   const theme = useTheme();
@@ -27,12 +27,10 @@ export default function CategoriesScreen() {
 
   const parents = categories.data;
   const selected = selectedId === 'all' ? null : (parents.find((c) => c.id === selectedId) ?? null);
-  const open = (c: Category) => router.push({ pathname: '/category/[id]', params: { id: String(c.id), title: c.title } });
-
-  const rows = (selected ? [selected] : parents).flatMap((parent) => [
-    { category: parent, isParent: true },
-    ...(parent.children ?? []).map((child) => ({ category: child, isParent: false })),
-  ]);
+  const rows: Row[] = [
+    ...(selected ? [] : [{ category: 'all' as const, depth: 0 }]),
+    ...(selected ? [selected] : parents).flatMap((parent) => flatten(parent, 0)),
+  ];
 
   const sidebar: { id: number | 'all'; title: string }[] = [{ id: 'all', title: t('categories.all') }, ...parents];
 
@@ -61,21 +59,38 @@ export default function CategoriesScreen() {
           style={{ flex: 1 }}
           contentContainerStyle={{ padding: spacing.md }}
           data={rows}
-          keyExtractor={(r) => String(r.category.id)}
-          renderItem={({ item: { category, isParent }, index }) => (
-            <Pressable
-              onPress={() => open(category)}
-              style={[styles.child, { borderColor: theme.border }, isParent && index > 0 && { marginTop: spacing.md }]}>
-              {category.image ? <Image source={category.image} style={styles.childImage} contentFit="contain" /> : null}
-              <AppText bold={isParent} style={{ flex: 1 }}>
-                {isParent ? `${t('common.seeAll')}: ${category.title}` : category.title}
-              </AppText>
-            </Pressable>
-          )}
+          keyExtractor={(r) => (r.category === 'all' ? 'all' : String(r.category.id))}
+          renderItem={({ item: { category, depth }, index }) =>
+            category === 'all' ? (
+              <Pressable onPress={() => openCategory('all', t('categories.allProducts'))} style={[styles.child, { borderColor: theme.border }]}>
+                <AppText bold style={{ flex: 1, color: theme.primary }}>{t('categories.allProducts')}</AppText>
+              </Pressable>
+            ) : (
+              <Pressable
+                onPress={() => openCategory(category)}
+                style={[
+                  styles.child,
+                  { borderColor: theme.border, paddingLeft: spacing.md + Math.max(depth - 1, 0) * spacing.lg },
+                  depth === 0 && index > 0 && { marginTop: spacing.md },
+                ]}>
+                {category.image && depth < 2 ? <Image source={category.image} style={styles.childImage} contentFit="contain" /> : null}
+                <AppText bold={depth === 0} size={depth > 1 ? 14 : 15} muted={depth > 1} style={{ flex: 1 }}>
+                  {depth === 0 ? `${t('common.seeAll')}: ${category.title}` : category.title}
+                </AppText>
+              </Pressable>
+            )
+          }
         />
       </View>
     </SafeAreaView>
   );
+}
+
+type Row = { category: Category | 'all'; depth: number };
+
+/** A category and every level under it, depth first. */
+function flatten(category: Category, depth: number): Row[] {
+  return [{ category, depth }, ...(category.children ?? []).flatMap((c) => flatten(c, depth + 1))];
 }
 
 const styles = StyleSheet.create({

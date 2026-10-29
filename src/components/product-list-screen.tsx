@@ -1,4 +1,5 @@
 import type { UseInfiniteQueryResult, InfiniteData } from '@tanstack/react-query';
+import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
@@ -7,15 +8,17 @@ import { AppText, Chip, Empty, ErrorView, Loading } from '@/components/ui';
 import type { Paginated, Product } from '@/lib/types';
 import { spacing } from '@/theme';
 
-/** A category's or brand's products, with the website's sort options. */
+/** A category's or brand's products, with the website's sort options; `top` goes above them. */
 export function ProductListScreen<P extends Paginated<Product>>({
   query,
   sort,
   onSort,
+  top,
 }: {
   query: UseInfiniteQueryResult<InfiniteData<P>>;
   sort: string;
   onSort: (sort: string) => void;
+  top?: ReactElement;
 }) {
   const { t } = useTranslation();
 
@@ -38,6 +41,7 @@ export function ProductListScreen<P extends Paginated<Product>>({
       loadingMore={query.isFetchingNextPage}
       header={
         <View>
+          {top}
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {sorts.map((s) => (
               <Chip key={s.value} label={s.label} selected={sort === s.value} onPress={() => onSort(s.value)} />

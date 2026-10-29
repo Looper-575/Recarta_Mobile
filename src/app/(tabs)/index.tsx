@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Dimensions, FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CategorySlider } from '@/components/category';
 import { ProductCard } from '@/components/product';
 import { AppText, ErrorView, Heading, Loading } from '@/components/ui';
 import { useHome, useSettings } from '@/hooks/queries';
 import { openStoreLink } from '@/lib/links';
-import type { Category } from '@/lib/types';
 import { radius, spacing, useTheme } from '@/theme';
 
 const { width } = Dimensions.get('window');
@@ -54,15 +54,7 @@ export default function HomeScreen() {
           <Heading action={{ label: t('common.seeAll'), onPress: () => router.navigate('/(tabs)/categories') }}>
             {t('home.shopByCategory')}
           </Heading>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ marginHorizontal: -spacing.lg }}
-            contentContainerStyle={{ paddingHorizontal: spacing.lg, gap: spacing.md }}>
-            {parent_categories.map((c) => (
-              <CategoryTile key={c.id} category={c} />
-            ))}
-          </ScrollView>
+          <CategorySlider categories={parent_categories} />
 
           {featured_products.length ? (
             <>
@@ -98,28 +90,9 @@ export default function HomeScreen() {
   );
 }
 
-export function CategoryTile({ category }: { category: Category }) {
-  const theme = useTheme();
-  return (
-    <Pressable
-      onPress={() => router.push({ pathname: '/category/[id]', params: { id: String(category.id), title: category.title } })}
-      style={styles.tile}>
-      <View style={[styles.tileImage, { backgroundColor: theme.surface }]}>
-        {category.image ? <Image source={category.image} style={{ width: '70%', height: '70%' }} contentFit="contain" /> : null}
-      </View>
-      <AppText size={12} numberOfLines={2} style={{ textAlign: 'center' }}>
-        {category.title}
-      </AppText>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   header: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, alignItems: 'flex-start' },
   logo: { width: 140, height: 40 },
-  // A row of small round tiles that scrolls sideways.
-  tile: { width: 72, alignItems: 'center', gap: spacing.xs },
-  tileImage: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   // Two cards a row: percentages, so rounding can never push the second card to its own row.
   productRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: spacing.md },
   productCell: { width: '48.5%' },
