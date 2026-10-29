@@ -1,5 +1,8 @@
 # Store app
 
+**Picking this project up? Start with [docs/HANDOVER.md](docs/HANDOVER.md)**: where everything
+is, what's built, what's left, and this PC's build quirks.
+
 The customer app for Keryana Store, built with Expo (SDK 58), Expo Router and TypeScript.
 One codebase serves any store running the same Laravel API (`/api/v1`, documented in the
 Laravel repo's `docs/api_v1.md`): the store is chosen when the app is started or built.
