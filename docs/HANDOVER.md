@@ -91,9 +91,10 @@ npx expo lint
 - **Development build** (installed on the tester's phone): EAS build `c55378da`, package
   `pk.keryana.app` (the *old* id). A new one for `pk.recarta.com`:
   `NODE_OPTIONS=--use-system-ca STORE=keryana npx eas-cli@latest build --profile development --platform android --non-interactive`
-- **Production build** (`.aab` for Play): build `e5c6637a` at commit `9ba4995`, started
-  2026-10-29, was still queued when this was written. See it at
+- **Production build** (`.aab` for Play): build `e5c6637a` at commit `9ba4995`, **finished
+  2026-10-29**, package `pk.recarta.com`, placeholder icon. Build page:
   https://expo.dev/accounts/looper575/projects/keryana-store/builds/e5c6637a-6894-40e0-bffa-0b7a7cf7c7d1
+  (the `.aab` downloads from there). Not uploaded to Play yet.
   ⚠ Build at commit `6c5c0bc` is the **old package** `pk.keryana.app` — never upload it to Play.
 - EAS keeps both Android keystores (dev and `pk.recarta.com`); download a backup with
   `npx eas-cli@latest credentials`.
@@ -113,7 +114,7 @@ npx expo lint
 
 ## 6. Play Store: where it stands and what's next
 
-1. Wait for production build `e5c6637a`, download the `.aab`.
+1. Download the `.aab` of production build `e5c6637a` (finished) from its build page.
 2. Play Console → Testing → **Internal testing** → Create release → upload the `.aab`. First
    upload must be manual. Keep **"Use a Google-generated key"** (Play App Signing); EAS's key
    becomes the upload key. Tester email list "Internal Testers" (press Enter after typing
