@@ -27,7 +27,18 @@
     "home": {
         "shopByCategory": "Shop by category",
         "featured": "Featured products",
-        "brands": "Top brands"
+        "brands": "Top brands",
+        "featuredCategories": "Featured categories",
+        "services": {
+            "shipping": "Fast shipping",
+            "shippingNote": "Shipped in 1-3 days",
+            "returns": "Free returns",
+            "returnsNote": "Free 7 days return",
+            "cod": "Payment on delivery",
+            "codNote": "Pay when it arrives",
+            "support": "Customer support",
+            "supportNote": "Phone and email"
+        }
     },
     "search": {
         "placeholder": "Search products",
@@ -55,7 +66,9 @@
         "buyMore": "Buy more, save more",
         "tier": "{{min}}+ items: {{pct}}% off",
         "description": "Description",
-        "share": "Share"
+        "share": "Share",
+        "wishlist": "Wishlist",
+        "saveUpTo": "Save up to {{pct}}%"
     },
     "cart": {
         "title": "Cart",

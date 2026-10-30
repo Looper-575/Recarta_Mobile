@@ -45,15 +45,21 @@ export type Product = {
   manage_inventory: boolean;
   items: ProductItem[];
   url: string | null;
+  /** Lists only: each item's stock status, by item id. */
+  stock?: Record<number, StockStatus>;
+  /** Lists only: the campaign's best discount ("Save up to 12%"), or null. */
+  save_up_to?: number | null;
 };
 
+export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'unavailable';
+
 export type StockInfo = {
-  status: 'in_stock' | 'low_stock' | 'out_of_stock' | 'unavailable';
+  status: StockStatus;
   label: string;
   quantity: number | null;
 };
 
-export type ProductDetail = Product & {
+export type ProductDetail = Omit<Product, 'stock'> & {
   description: string | null;
   brand: Brand | null;
   stock: Record<string, StockInfo>;
