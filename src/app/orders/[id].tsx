@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
@@ -116,7 +115,7 @@ export default function OrderScreen() {
         ) : null}
         <Button title={t('orders.reorder')} onPress={() => act('reorder')} loading={busy === 'reorder'} />
         {o.can_return ? <Button title={t('returns.request')} variant="outline" onPress={() => router.push({ pathname: '/return/[orderId]', params: { orderId: String(o.id) } })} /> : null}
-        <Button title={t('orders.invoice')} variant="outline" onPress={() => WebBrowser.openBrowserAsync(o.invoice_url)} />
+        <Button title={t('orders.invoice')} variant="outline" onPress={() => router.push({ pathname: '/invoice/[id]', params: { id: String(o.id) } })} />
         {o.can_cancel ? <Button title={t('orders.cancel')} variant="danger" onPress={confirmCancel} loading={busy === 'cancel'} /> : null}
       </View>
     </ScrollView>

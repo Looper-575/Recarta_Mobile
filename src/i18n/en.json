@@ -176,7 +176,9 @@
         "reorder": "Order again",
         "timeline": "Status",
         "deliveryTo": "Delivery",
-        "invoice": "View invoice"
+        "invoice": "View invoice",
+        "invoiceTitle": "Invoice",
+        "invoiceError": "Couldn't load the invoice ({{status}})."
     },
     "track": {
         "title": "Track an order",

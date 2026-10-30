@@ -85,6 +85,7 @@ function AppStack() {
       <Stack.Screen name="forgot-password" options={{ title: t('auth.resetPassword'), presentation: 'modal' }} />
       <Stack.Screen name="orders/index" options={{ title: t('orders.title') }} />
       <Stack.Screen name="orders/[id]" options={{ title: '' }} />
+      <Stack.Screen name="invoice/[id]" options={{ title: t('orders.invoiceTitle') }} />
       <Stack.Screen name="track" options={{ title: t('track.title') }} />
       <Stack.Screen name="profile" options={{ title: t('account.profile') }} />
       <Stack.Screen name="addresses" options={{ title: t('account.addresses') }} />
