@@ -7,15 +7,20 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "android": { "image": "latest" },
+      "ios": { "image": "latest" },
       "env": { "STORE": "keryana" }
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" },
+      "android": { "buildType": "apk", "image": "latest" },
+      "ios": { "image": "latest" },
       "env": { "STORE": "keryana" }
     },
     "production": {
       "autoIncrement": true,
+      "android": { "image": "latest" },
+      "ios": { "image": "latest" },
       "env": { "STORE": "keryana" }
     }
   },
