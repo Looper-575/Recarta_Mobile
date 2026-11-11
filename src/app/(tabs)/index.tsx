@@ -6,21 +6,29 @@ import { ActivityIndicator, Dimensions, FlatList, Pressable, RefreshControl, Scr
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CategorySlider, openCategory } from '@/components/category';
+import { CityPicker } from '@/components/city-picker';
 import { ProductCard } from '@/components/product';
-import { AppText, Chip, ErrorView, Heading, Loading } from '@/components/ui';
+import { SideMenu } from '@/components/side-menu';
+import { AppText, ErrorView, Heading, Loading } from '@/components/ui';
 import { useCategories, useCategoryProducts, useHome, useSettings } from '@/hooks/queries';
 import { openStoreLink } from '@/lib/links';
 import type { Category, Home, Product } from '@/lib/types';
 import { radius, spacing, useTheme } from '@/theme';
 
 const { width } = Dimensions.get('window');
+// Three compact cards across the screen, as the website shows them on a phone.
+const cardGap = spacing.sm;
+const cardWidth = (width - 2 * spacing.lg - 2 * cardGap) / 3;
 
 type Banner = Home['banners'][string][number];
 
 /**
- * The website's home page, top to bottom: slides, promo cards, categories, featured
- * products, two banners, services, four banners, featured categories (tabs), a slim
+ * The website's home page, top to bottom: slides, categories, promo cards, featured
+ * products, then a carousel per featured category with the banners between them
+ * (first banner, 2 categories, second banner, 2 more, services and four banners, the
+ * rest), a slim
  * banner, top brands. Banners and cards are set up in the admin; empty sections hide.
+ * The header has the ☰ menu, the logo and the "Deliver to" city picker.
  */
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -44,16 +52,24 @@ export default function HomeScreen() {
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView refreshControl={<RefreshControl refreshing={home.isRefetching} onRefresh={() => void home.refetch()} />}>
         <View style={styles.header}>
+          <SideMenu />
           {settings?.store.logo ? (
             <Image source={settings.store.logo} style={styles.logo} contentFit="contain" />
           ) : (
-            <AppText size={20} bold>{settings?.store.name}</AppText>
+            <AppText size={20} bold style={{ flexShrink: 1 }}>{settings?.store.name}</AppText>
           )}
+          <View style={{ flex: 1 }} />
+          <CityPicker />
         </View>
 
         {slides.length ? <Slides slides={slides} onPress={open} /> : null}
 
         <View style={{ paddingHorizontal: spacing.lg }}>
+          <Heading action={{ label: t('common.seeAll'), onPress: () => router.navigate('/(tabs)/categories') }}>
+            {t('home.shopByCategory')}
+          </Heading>
+          <CategorySlider categories={parent_categories} />
+
           {promoCards.length ? (
             <ScrollView
               horizontal
@@ -66,25 +82,34 @@ export default function HomeScreen() {
             </ScrollView>
           ) : null}
 
-          <Heading action={{ label: t('common.seeAll'), onPress: () => router.navigate('/(tabs)/categories') }}>
-            {t('home.shopByCategory')}
-          </Heading>
-          <CategorySlider categories={parent_categories} />
-
           {featured_products.length ? (
             <>
               <Heading>{t('home.featured')}</Heading>
-              <ProductRows products={featured_products} />
+              <ProductCarousel products={featured_products} />
             </>
           ) : null}
 
-          {twoBanners.length >= 2 ? (
+          {/* The two banners' first above the featured categories, the second after two of them. */}
+          {twoBanners[0] ? (
             <View style={styles.section}>
-              {twoBanners.slice(0, 2).map((b, i) => (
-                <BannerImage key={i} banner={b} onPress={open} style={styles.wideBanner} />
-              ))}
+              <BannerImage banner={twoBanners[0]} onPress={open} style={styles.wideBanner} />
             </View>
           ) : null}
+
+          {/* Featured categories two at a time, with the banners and services between them. */}
+          {featured_categories.slice(0, 2).map((c) => (
+            <FeaturedCategory key={c.id} category={c} />
+          ))}
+
+          {twoBanners[1] ? (
+            <View style={styles.section}>
+              <BannerImage banner={twoBanners[1]} onPress={open} style={styles.wideBanner} />
+            </View>
+          ) : null}
+
+          {featured_categories.slice(2, 4).map((c) => (
+            <FeaturedCategory key={c.id} category={c} />
+          ))}
 
           <Services />
 
@@ -96,7 +121,9 @@ export default function HomeScreen() {
             </View>
           ) : null}
 
-          {featured_categories.length ? <FeaturedCategories categories={featured_categories} /> : null}
+          {featured_categories.slice(4).map((c) => (
+            <FeaturedCategory key={c.id} category={c} />
+          ))}
 
           {slimBanner ? (
             <View style={styles.section}>
@@ -181,16 +208,22 @@ function BannerImage({
   );
 }
 
-/** Two product cards a row. */
-function ProductRows({ products }: { products: Product[] }) {
+/** Three compact product cards at a time, in a row that scrolls sideways a card at a time. */
+function ProductCarousel({ products }: { products: Product[] }) {
   return (
-    <View style={styles.productRow}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      decelerationRate="fast"
+      snapToInterval={cardWidth + cardGap}
+      style={{ marginHorizontal: -spacing.lg }}
+      contentContainerStyle={{ paddingHorizontal: spacing.lg, gap: cardGap }}>
       {products.map((p) => (
-        <View key={p.id} style={styles.productCell}>
-          <ProductCard product={p} />
+        <View key={p.id} style={{ width: cardWidth }}>
+          <ProductCard product={p} compact />
         </View>
       ))}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -216,42 +249,32 @@ function Services() {
   );
 }
 
-/** A tab per featured category and its newest products, like the website's tabs. */
-function FeaturedCategories({ categories }: { categories: Category[] }) {
+/**
+ * A featured category's newest products in a carousel, under its own title, as the
+ * website shows them on a phone. A category with no products hides.
+ */
+function FeaturedCategory({ category }: { category: Category }) {
   const { t } = useTranslation();
-  const [activeId, setActiveId] = useState(categories[0].id);
-  const active = categories.find((c) => c.id === activeId) ?? categories[0];
-  const products = useCategoryProducts(active.id, { sort: '1' });
-  const list = products.data?.pages[0]?.data.slice(0, 6) ?? [];
+  const products = useCategoryProducts(category.id, { sort: '1' });
+  const list = products.data?.pages[0]?.data.slice(0, 10) ?? [];
+
+  if (!products.isPending && !list.length) return null;
 
   return (
     <>
-      <Heading action={{ label: t('common.seeAll'), onPress: () => openCategory(active) }}>{t('home.featuredCategories')}</Heading>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {categories.map((c) => (
-          <Chip key={c.id} label={c.title} selected={c.id === active.id} onPress={() => setActiveId(c.id)} />
-        ))}
-      </ScrollView>
-      {products.isPending ? (
-        <ActivityIndicator style={{ margin: spacing.xl }} />
-      ) : list.length ? (
-        <ProductRows products={list} />
-      ) : (
-        <AppText muted style={{ textAlign: 'center', margin: spacing.lg }}>{t('common.nothingHere')}</AppText>
-      )}
+      <Heading action={{ label: t('common.seeAll'), onPress: () => openCategory(category) }}>{category.title}</Heading>
+      {products.isPending ? <ActivityIndicator style={{ margin: spacing.xl }} /> : <ProductCarousel products={list} />}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, alignItems: 'flex-start' },
-  logo: { width: 140, height: 40 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
+  logo: { width: 104, height: 36 },
   // rowGap, not gap: a column gap in the two-a-row grids would push the second item to its own row.
   section: { marginTop: spacing.xl, rowGap: spacing.md },
   // Two a row: percentages, so rounding can never push the second item to its own row.
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: spacing.md },
-  productRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: spacing.md },
-  productCell: { width: '48.5%' },
   banner: { borderRadius: radius.md, overflow: 'hidden' },
   promo: { width: width * 0.8, aspectRatio: 2 },
   wideBanner: { width: '100%', aspectRatio: 2.2 },

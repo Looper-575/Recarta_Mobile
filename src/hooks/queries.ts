@@ -8,8 +8,10 @@ import type {
   Cart,
   Category,
   City,
+  CmsPage,
   Customer,
   Home,
+  Menus,
   OrderDetail,
   OrderSummary,
   Paginated,
@@ -35,6 +37,13 @@ export const useSettings = () =>
   });
 
 export const useHome = () => useQuery({ queryKey: ['home'], queryFn: () => api<Home>('home') });
+
+/** The website's header and footer menus, for the app's side menu. */
+export const useMenus = () =>
+  useQuery({ queryKey: ['menus'], queryFn: () => api<Menus>('menus'), staleTime: 10 * 60 * 1000 });
+
+export const usePage = (slug: string) =>
+  useQuery({ queryKey: ['page', slug], queryFn: () => api<{ data: CmsPage }>(`pages/${slug}`).then((r) => r.data) });
 
 export const useCategories = () =>
   useQuery({

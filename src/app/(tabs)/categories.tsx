@@ -1,10 +1,9 @@
-import { Image } from 'expo-image';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { openCategory } from '@/components/category';
+import { CategoryIcon, openCategory } from '@/components/category';
 import { AppText, ErrorView, Loading } from '@/components/ui';
 import { useCategories } from '@/hooks/queries';
 import type { Category } from '@/lib/types';
@@ -32,7 +31,7 @@ export default function CategoriesScreen() {
     ...(selected ? [selected] : parents).flatMap((parent) => flatten(parent, 0)),
   ];
 
-  const sidebar: { id: number | 'all'; title: string }[] = [{ id: 'all', title: t('categories.all') }, ...parents];
+  const sidebar: { id: number | 'all'; title: string; image?: string | null }[] = [{ id: 'all', title: t('categories.all') }, ...parents];
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.background }}>
@@ -48,7 +47,8 @@ export default function CategoriesScreen() {
               <Pressable
                 onPress={() => setSelectedId(item.id)}
                 style={[styles.parent, active && { backgroundColor: theme.background, borderLeftColor: theme.primary }]}>
-                <AppText size={13} bold={active} style={active ? { color: theme.primary } : undefined}>
+                <CategoryIcon image={item.image} title={item.title} size={44} all={item.id === 'all'} />
+                <AppText size={12} bold={active} numberOfLines={2} style={[{ textAlign: 'center' }, active && { color: theme.primary }]}>
                   {item.title}
                 </AppText>
               </Pressable>
@@ -63,6 +63,7 @@ export default function CategoriesScreen() {
           renderItem={({ item: { category, depth }, index }) =>
             category === 'all' ? (
               <Pressable onPress={() => openCategory('all', t('categories.allProducts'))} style={[styles.child, { borderColor: theme.border }]}>
+                <CategoryIcon title={t('categories.allProducts')} size={40} all />
                 <AppText bold style={{ flex: 1, color: theme.primary }}>{t('categories.allProducts')}</AppText>
               </Pressable>
             ) : (
@@ -73,7 +74,7 @@ export default function CategoriesScreen() {
                   { borderColor: theme.border, paddingLeft: spacing.md + Math.max(depth - 1, 0) * spacing.lg },
                   depth === 0 && index > 0 && { marginTop: spacing.md },
                 ]}>
-                {category.image && depth < 2 ? <Image source={category.image} style={styles.childImage} contentFit="contain" /> : null}
+                <CategoryIcon image={category.image} title={category.title} size={depth > 1 ? 32 : 40} />
                 <AppText bold={depth === 0} size={depth > 1 ? 14 : 15} muted={depth > 1} style={{ flex: 1 }}>
                   {depth === 0 ? `${t('common.seeAll')}: ${category.title}` : category.title}
                 </AppText>
@@ -94,7 +95,6 @@ function flatten(category: Category, depth: number): Row[] {
 }
 
 const styles = StyleSheet.create({
-  parent: { paddingVertical: spacing.lg, paddingHorizontal: spacing.md, borderLeftWidth: 3, borderLeftColor: 'transparent' },
+  parent: { alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.md, paddingHorizontal: spacing.sm, borderLeftWidth: 3, borderLeftColor: 'transparent' },
   child: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderRadius: radius.sm },
-  childImage: { width: 40, height: 40 },
 });

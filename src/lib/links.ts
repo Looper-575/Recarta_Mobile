@@ -50,7 +50,8 @@ export function openStoreLink(link: string, categories: Category[] = []) {
   WebBrowser.openBrowserAsync(url.toString());
 }
 
-function findBySlug(tree: Category[], slug: string): Category | undefined {
+/** Finds a category anywhere in the menu tree by its slug. */
+export function findBySlug(tree: Category[], slug: string): Category | undefined {
   for (const c of tree) {
     if (c.slug === slug) return c;
     const found = findBySlug(c.children ?? [], slug);

@@ -24,6 +24,20 @@ export function findCategory(tree: Category[], id: number): Category | undefined
   return undefined;
 }
 
+/** A category's picture in a round tile; its first letter when it has none. `all`: every product. */
+export function CategoryIcon({ image, title, size, all }: { image?: string | null; title: string; size: number; all?: boolean }) {
+  const theme = useTheme();
+  return (
+    <View style={[styles.icon, { width: size, height: size, borderRadius: size / 2, backgroundColor: theme.surface, borderColor: theme.border }]}>
+      {image ? (
+        <Image source={image} style={{ width: '75%', height: '75%' }} contentFit="contain" />
+      ) : (
+        <AppText bold size={size * 0.4} style={{ color: theme.primary }}>{all ? '▦' : title.trim().charAt(0).toUpperCase()}</AppText>
+      )}
+    </View>
+  );
+}
+
 /** A small round tile: the category's image and title. */
 export function CategoryTile({ category }: { category: Category }) {
   const theme = useTheme();
@@ -56,6 +70,7 @@ export function CategorySlider({ categories, inset = spacing.lg }: { categories:
 }
 
 const styles = StyleSheet.create({
+  icon: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth },
   tile: { width: 72, alignItems: 'center', gap: spacing.xs },
   tileImage: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
 });

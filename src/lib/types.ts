@@ -79,6 +79,26 @@ export type Category = {
   children?: Category[];
 };
 
+/** A header or footer link from the admin (GET menus): what it points at. */
+export type MenuLink = {
+  title: string;
+  type: 'page' | 'category' | 'brand' | 'product' | 'custom';
+  slug?: string | null;
+  id?: number | null;
+  url: string | null;
+};
+
+export type Menus = {
+  header: (MenuLink & { children: MenuLink[] })[];
+  footer: {
+    description: string | null;
+    sections: { title: string; links: MenuLink[] }[];
+    socials: { title: string | null; icon: string | null; url: string | null }[];
+  };
+};
+
+export type CmsPage = { title: string; slug: string; banner: string | null; html: string | null };
+
 export type Brand = { id: number; title: string; slug: string; image: string | null };
 
 export type Home = {

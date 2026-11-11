@@ -32,9 +32,9 @@ export function Price({ price, original, size = 15 }: { price: number; original?
  * A product box like the website's: picture with its discount, wishlist heart and
  * campaign badge; title; the variant (a choice when there's more than one); price; and
  * Add to cart, or a - qty + stepper once it's in the cart, or Out of stock.
- * Tapping elsewhere opens the product.
+ * Tapping elsewhere opens the product. `compact` is the small box for three across.
  */
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, compact }: { product: Product; compact?: boolean }) {
   const theme = useTheme();
   const { t } = useTranslation();
   const add = useAddToCart();
@@ -56,16 +56,18 @@ export function ProductCard({ product }: { product: Product }) {
   const onError = (e: Error) =>
     Alert.alert('', e instanceof ApiError ? e.field('quantity') ?? e.field('item_id') ?? e.message : e.message);
   const changeQuantity = (quantity: number) => item && setQuantity.mutate({ item_id: item.id, quantity }, { onError });
+  // Text sizes for the full box, or the compact one.
+  const fs = compact ? { title: 12, price: 12, small: 10, step: 15 } : { title: 14, price: 14, small: 12, step: 18 };
 
   return (
     <Pressable
       onPress={() => router.push({ pathname: '/product/[id]', params: { id: String(product.id) } })}
-      style={[styles.card, { borderColor: theme.border, backgroundColor: theme.background }]}>
+      style={[styles.card, compact && styles.compactCard, { borderColor: theme.border, backgroundColor: theme.background }]}>
       <View>
         <Image source={product.thumbnail} style={styles.image} contentFit="contain" transition={150} />
         {item && item.discount > 0 ? (
-          <View style={[styles.discount, { backgroundColor: theme.primary }]}>
-            <AppText size={11} bold style={{ color: theme.onPrimary }}>{Math.round(item.discount)}%</AppText>
+          <View style={[styles.discount, compact && styles.compactBadge, { backgroundColor: theme.primary }]}>
+            <AppText size={compact ? 9 : 11} bold style={{ color: theme.onPrimary }}>{Math.round(item.discount)}%</AppText>
           </View>
         ) : null}
         {item ? (
@@ -74,38 +76,52 @@ export function ProductCard({ product }: { product: Product }) {
             accessibilityRole="button"
             accessibilityLabel={t('product.wishlist')}
             onPress={() => (customer ? toggleWishlist.mutate({ itemId: item.id, add: !inWishlist }) : router.push('/login'))}
-            style={[styles.heart, { backgroundColor: theme.background }]}>
-            <AppText size={16} style={{ color: theme.primary }}>{inWishlist ? '♥' : '♡'}</AppText>
+            style={[styles.heart, compact && styles.compactBadge, { backgroundColor: theme.background }]}>
+            <AppText size={compact ? 13 : 16} style={{ color: theme.primary }}>{inWishlist ? '♥' : '♡'}</AppText>
           </Pressable>
         ) : null}
         {product.save_up_to ? (
           <View style={[styles.campaign, { backgroundColor: theme.success }]}>
-            <AppText size={10} bold style={{ color: '#fff' }}>⚡ {t('product.saveUpTo', { pct: product.save_up_to })}</AppText>
+            <AppText size={compact ? 8 : 10} bold style={{ color: '#fff' }} numberOfLines={1}>
+              ⚡ {t('product.saveUpTo', { pct: product.save_up_to })}
+            </AppText>
           </View>
         ) : null}
       </View>
-      <AppText numberOfLines={2} size={14} style={{ minHeight: 38 }}>
+      <AppText numberOfLines={2} size={fs.title} style={{ minHeight: compact ? 32 : 38 }}>
         {product.title}
       </AppText>
       {product.items.length > 1 && item ? (
-        <VariantPicker items={product.items} value={item} onChange={(i) => setItemId(i.id)} />
+        <VariantPicker items={product.items} value={item} onChange={(i) => setItemId(i.id)} size={fs.small} />
       ) : item ? (
         <View style={[styles.variant, { borderColor: theme.border, backgroundColor: theme.surface }]}>
-          <AppText size={12} muted numberOfLines={1}>{item.title}</AppText>
+          <AppText size={fs.small} muted numberOfLines={1}>{item.title}</AppText>
         </View>
       ) : null}
-      {item ? <Price price={item.price} original={item.original_price} size={14} /> : null}
+      {item ? <Price price={item.price} original={item.original_price} size={fs.price} /> : null}
       <View style={{ marginTop: 'auto', paddingTop: spacing.xs }}>
         {inCart > 0 ? (
-          <View style={[styles.button, styles.stepper, { borderColor: theme.primary }]}>
-            <Pressable hitSlop={6} disabled={busy} onPress={() => changeQuantity(inCart - 1)} style={styles.step} accessibilityLabel="−">
-              <AppText bold size={18} style={{ color: theme.primary }}>−</AppText>
+          <View style={[styles.button, styles.stepper, compact && styles.compactButton, { borderColor: theme.primary }]}>
+            <Pressable hitSlop={6} disabled={busy} onPress={() => changeQuantity(inCart - 1)} style={[styles.step, compact && styles.compactStep]} accessibilityLabel="−">
+              <AppText bold size={fs.step} style={{ color: theme.primary }}>−</AppText>
             </Pressable>
-            {busy ? <ActivityIndicator color={theme.primary} /> : <AppText bold>{inCart}</AppText>}
-            <Pressable hitSlop={6} disabled={busy} onPress={() => changeQuantity(inCart + 1)} style={styles.step} accessibilityLabel="+">
-              <AppText bold size={18} style={{ color: theme.primary }}>+</AppText>
+            {busy ? <ActivityIndicator size="small" color={theme.primary} /> : <AppText bold size={compact ? 13 : 15}>{inCart}</AppText>}
+            <Pressable hitSlop={6} disabled={busy} onPress={() => changeQuantity(inCart + 1)} style={[styles.step, compact && styles.compactStep]} accessibilityLabel="+">
+              <AppText bold size={fs.step} style={{ color: theme.primary }}>+</AppText>
             </Pressable>
           </View>
+        ) : purchasable && compact ? (
+          <Pressable
+            accessibilityRole="button"
+            disabled={add.isPending}
+            onPress={() => item && add.mutate({ item_id: item.id }, { onError })}
+            style={[styles.button, styles.compactButton, styles.soldOut, { backgroundColor: theme.primary }]}>
+            {add.isPending ? (
+              <ActivityIndicator size="small" color={theme.onPrimary} />
+            ) : (
+              <AppText size={12} bold style={{ color: theme.onPrimary }}>{t('product.add')}</AppText>
+            )}
+          </Pressable>
         ) : purchasable ? (
           <Button
             title={t('product.addToCart')}
@@ -114,8 +130,8 @@ export function ProductCard({ product }: { product: Product }) {
             style={styles.button}
           />
         ) : (
-          <View style={[styles.button, styles.soldOut, { backgroundColor: theme.surface }]}>
-            <AppText size={13} muted>{product.sellable ? t('product.outOfStock') : product.status_label || t('product.outOfStock')}</AppText>
+          <View style={[styles.button, styles.soldOut, compact && styles.compactButton, { backgroundColor: theme.surface }]}>
+            <AppText size={compact ? 11 : 13} muted numberOfLines={1}>{product.sellable ? t('product.outOfStock') : product.status_label || t('product.outOfStock')}</AppText>
           </View>
         )}
       </View>
@@ -124,14 +140,24 @@ export function ProductCard({ product }: { product: Product }) {
 }
 
 /** A compact variant box that opens a small list to pick from. */
-function VariantPicker({ items, value, onChange }: { items: ProductItem[]; value: ProductItem; onChange: (item: ProductItem) => void }) {
+function VariantPicker({
+  items,
+  value,
+  onChange,
+  size = 12,
+}: {
+  items: ProductItem[];
+  value: ProductItem;
+  onChange: (item: ProductItem) => void;
+  size?: number;
+}) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   return (
     <>
       <Pressable onPress={() => setOpen(true)} style={[styles.variant, { borderColor: theme.border }]}>
-        <AppText size={12} numberOfLines={1} style={{ flex: 1 }}>{value.title}</AppText>
-        <AppText size={12} muted>▾</AppText>
+        <AppText size={size} numberOfLines={1} style={{ flex: 1 }}>{value.title}</AppText>
+        <AppText size={size} muted>▾</AppText>
       </Pressable>
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
@@ -155,7 +181,7 @@ function VariantPicker({ items, value, onChange }: { items: ProductItem[]; value
   );
 }
 
-/** Two-column product list that loads the next page as it scrolls. */
+/** Product list, three compact boxes a row, that loads the next page as it scrolls. */
 export function ProductGrid({
   products,
   onEndReached,
@@ -173,12 +199,12 @@ export function ProductGrid({
     <FlatList
       data={products}
       keyExtractor={(p) => String(p.id)}
-      numColumns={2}
-      columnWrapperStyle={{ gap: spacing.md }}
-      contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}
+      numColumns={3}
+      columnWrapperStyle={{ gap: spacing.sm }}
+      contentContainerStyle={{ padding: spacing.md, gap: spacing.sm }}
       renderItem={({ item }) => (
-        <View style={{ flex: 1 / 2 }}>
-          <ProductCard product={item} />
+        <View style={{ flex: 1 / 3 }}>
+          <ProductCard product={item} compact />
         </View>
       )}
       onEndReached={onEndReached}
@@ -194,6 +220,11 @@ const styles = StyleSheet.create({
   card: { flex: 1, borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.md, padding: spacing.sm, gap: spacing.xs },
   button: { minHeight: 38, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm },
   soldOut: { borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },
+  // The compact box (three across): tighter padding, smaller button and badges.
+  compactCard: { padding: 6, gap: 3 },
+  compactButton: { minHeight: 30, paddingVertical: 2, paddingHorizontal: 4 },
+  compactStep: { paddingHorizontal: spacing.sm, paddingVertical: 0 },
+  compactBadge: { transform: [{ scale: 0.8 }], top: 0 },
   stepper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderRadius: radius.md },
   step: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   // Over the picture: discount top left, heart top right, campaign along the bottom.

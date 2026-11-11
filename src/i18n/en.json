@@ -13,6 +13,19 @@
         "nothingHere": "Nothing here yet.",
         "noConnection": "No connection. Please check your internet and try again."
     },
+    "menu": {
+        "open": "Menu",
+        "contact": "Contact us",
+        "follow": "Follow us"
+    },
+    "city": {
+        "deliverTo": "Deliver to",
+        "select": "Select your city",
+        "title": "Deliver to",
+        "search": "Search city...",
+        "noMatch": "No cities match your search",
+        "clear": "Clear selection"
+    },
     "categories": {
         "all": "All",
         "allProducts": "All products"
@@ -57,6 +70,7 @@
     },
     "product": {
         "addToCart": "Add to cart",
+        "add": "Add",
         "added": "Added to cart",
         "outOfStock": "Out of stock",
         "notifyMe": "Notify me when back in stock",
