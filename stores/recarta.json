@@ -1,7 +1,7 @@
 {
     "name": "Recarta",
     "slug": "keryana-store",
-    "scheme": "keryana",
+    "scheme": "recarta",
     "website": "https://recarta.atlantisbposolutions.com:4343",
     "apiUrl": "https://recarta.atlantisbposolutions.com:4343/api/v1",
     "iosBundleId": "pk.recarta.com",
