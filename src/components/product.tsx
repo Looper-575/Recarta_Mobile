@@ -181,6 +181,15 @@ function VariantPicker({
   );
 }
 
+/**
+ * The products of every loaded page, each once. A product the server listed on two
+ * pages (pages shifted between loads) would otherwise appear twice.
+ */
+export function productsOf(pages: { data: Product[] }[] | undefined): Product[] {
+  const seen = new Set<number>();
+  return (pages ?? []).flatMap((p) => p.data).filter((p) => !seen.has(p.id) && seen.add(p.id));
+}
+
 /** Product list, three compact boxes a row, that loads the next page as it scrolls. */
 export function ProductGrid({
   products,

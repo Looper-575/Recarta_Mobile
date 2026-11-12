@@ -3,7 +3,7 @@ import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, View } from 'react-native';
 
-import { ProductGrid } from '@/components/product';
+import { ProductGrid, productsOf } from '@/components/product';
 import { AppText, Chip, Empty, ErrorView, Loading } from '@/components/ui';
 import type { Paginated, Product } from '@/lib/types';
 import { spacing } from '@/theme';
@@ -25,7 +25,7 @@ export function ProductListScreen<P extends Paginated<Product>>({
   if (query.isPending) return <Loading />;
   if (query.isError) return <ErrorView message={query.error.message} onRetry={query.refetch} />;
 
-  const products = query.data.pages.flatMap((p) => p.data);
+  const products = productsOf(query.data.pages);
   const total = query.data.pages[0]?.meta.total;
   const sorts = [
     { value: '1', label: t('list.sortNewest') },

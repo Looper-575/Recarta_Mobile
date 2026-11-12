@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ProductGrid } from '@/components/product';
+import { ProductGrid, productsOf } from '@/components/product';
 import { AppText, Empty, ErrorView, Heading, Loading } from '@/components/ui';
 import { useSearch, useSuggest } from '@/hooks/queries';
 import { radius, spacing, useTheme } from '@/theme';
@@ -25,7 +25,7 @@ export default function SearchScreen() {
 
   const suggest = useSuggest(submitted ? '' : typed);
   const results = useSearch(submitted);
-  const products = results.data?.pages.flatMap((p) => p.data) ?? [];
+  const products = productsOf(results.data?.pages);
 
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: theme.background }}>

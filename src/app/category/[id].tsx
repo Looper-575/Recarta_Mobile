@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { CategoryIcon, findCategory } from '@/components/category';
-import { ProductCard } from '@/components/product';
+import { ProductCard, productsOf } from '@/components/product';
 import { AppText, Chip, Empty, ErrorView, Loading } from '@/components/ui';
 import { useCategories, useCategoryProducts } from '@/hooks/queries';
 import type { Category } from '@/lib/types';
@@ -51,7 +51,7 @@ export default function CategoryScreen() {
     { id: 'all', title: t('categories.all'), image: null },
     ...tree.map((c) => ({ id: c.id, title: c.title, image: c.image })),
   ];
-  const products = query.data?.pages.flatMap((p) => p.data) ?? [];
+  const products = productsOf(query.data?.pages);
   const total = query.data?.pages[0]?.meta.total;
   const heading = current?.title ?? t('categories.allProducts');
 
